@@ -1,0 +1,28 @@
+version: '3.1' # La version du docker-compose. Ici la derniere en date
+
+services:
+  db:
+    image: postgres # On prend l'image postgres sur le hub
+    restart: always # redemarre a chaque fois des qu'il est kill
+    ports:
+      - "35432:5432" #On mappe le port de l'host 5432 sur celui de la machine 35432
+    environment: # variables d'environnements que l'on passe au container db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: db
+
+  app:
+    depends_on:
+      - db # attends que db soit lancé pour lui meme se lancé
+    environment: # variables d'environnements que l'on passe au container app
+      DATABASE_URL: postgres://user:pass@postgres:35432/db
+      PORT: 3000
+      NODE_ENV: development
+    command: npm run dev # permet de lancer nodemon
+    ports:
+      - "3000:3000" #on mappe le port 3000 host/machine. Ainsi je peux lancer localhost:3000 et voir ma superbe page !
+    image: alex/node-web-app #On appelle l'image alex/node-web-app. Ici c'est un nom local (pas call sur le hub)
+    volumes:
+    - ./app/app:/usr/src/app/app # je crée ce volume pour que les modifications faites sur ma machine soient actualisé sur le container. Avec nodemon je n'ai plus besoin de kill puis relancer
+
+
